@@ -34,7 +34,7 @@
    :paths [["niche.janet" "bin/"]]}
   {:name "tweake"
    :url "https://github.com/sogaiu/tweake"
-   :tag "c42749df769724d5f923ebcf01b568614fa27d30"
+   :tag "c99b22c0e7c27f973b006637be96dcbadc5901f0"
    :paths [["tweake.janet" "bin/"]]}
   {:name "spork"
    :url "https://github.com/janet-lang/spork"

@@ -2802,7 +2802,7 @@
 
 
 
-(def version "2026-03-25_06-02-35")
+(def version "2026-04-03_07-43-46")
 
 (def usage
   `````
@@ -2859,6 +2859,8 @@
   `````)
 
 ########################################################################
+
+(def peek t/scan-src)
 
 (defn tweak
   [src top-level-index path value-str]

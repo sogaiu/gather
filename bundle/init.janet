@@ -21,8 +21,20 @@
   (try
     (do
       (def src (slurp target-path))
-      (def new-src (t/tweak src 0 [1] "./spork/pm"))
+      # expect to find in src:
+      #
+      #   (import ../deps/spork/pm)
+      #           ^^^^^^^^^^^^^^^^
+      #
+      # i.e. the zero-th top-level form of file, 1st argument
+      # should be a symbol with name `../deps/spork/pm`
+      (def args [src 0 [1]])
+      (def [found-value _ _] (t/peek ;args))
+      (assertf (= '../deps/spork/pm found-value)
+               "unexpected import path in source code, check: %s"
+               target-path)
+      (def new-src (t/tweak ;args "./spork/pm"))
       (spit target-path new-src))
     ([e]
-      (eprint "bundle script: prep hook error" e))))
+      (eprintf "bundle script: prep hook error\n  %s" e))))
 
