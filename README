@@ -1,0 +1,15 @@
+Usage: gather
+
+       gather [-h|--help]|[-v|--version]
+
+Vendor bits according to info.jdn's :vendored section [1].
+
+Options:
+
+  -h, --help             show this output
+  -v, --version          show version information
+
+---
+
+[1] This code is currently mostly a repackaging of `jeep`'s
+    `prep` subcommand with the argument `vendor`.
