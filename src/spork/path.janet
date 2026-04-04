@@ -22,11 +22,6 @@
       (if (= (path i) 46)
         (string/slice path (m 0))))))
 
-(defn- redef
-  "Redef a value, keeping all metadata."
-  [from to]
-  (setdyn (symbol to) (dyn (symbol from))))
-
 (defn- capture-lead
   [& xs]
   [:lead (xs 0)])
@@ -40,7 +35,7 @@
   [path]
   (string/has-prefix? "/" path))
 
-(redef "ext" "posix/ext")
+(def posix/ext ext)
 
 (def posix/sep "Platform separator" "/")
 
@@ -179,7 +174,7 @@
       (array/concat parts (string/slice path start)))
     (filter |(> (length $) 0) parts)))
 
-(redef "ext" "win32/ext")
+(def win32/ext ext)
 
 (def win32/sep "Platform separator" `\`)
 
@@ -299,38 +294,30 @@
   (win32/join ;up-walk ;down-walk))
 
 #
-# satisfy flycheck
-#
-
-(def ext nil)
-(def sep nil)
-(def delim nil)
-(def basename nil)
-(def dirname nil)
-(def parent nil)
-(def abspath? nil)
-(def abspath nil)
-(def parts nil)
-(def normalize nil)
-(def join nil)
-
-#
 # Specialize for current OS
 #
 
-(def- syms
-  ["ext"
-   "sep"
-   "delim"
-   "basename"
-   "dirname"
-   "parent"
-   "abspath?"
-   "abspath"
-   "parts"
-   "normalize"
-   "join"
-   "relpath"])
-(let [pre (if (= :windows (os/which)) "win32" "posix")]
-  (each sym syms
-    (redef (string pre "/" sym) sym)))
+(def- pre (if (= :windows (os/which)) "win32" "posix"))
+
+(def sep (comptime (if pre win32/sep posix/sep)))
+
+(def delim (comptime (if pre win32/delim posix/delim)))
+
+(def basename (comptime (if pre win32/basename posix/basename)))
+
+(def dirname (comptime (if pre win32/dirname posix/dirname)))
+
+(def parent (comptime (if pre win32/parent posix/parent)))
+
+(def abspath? (comptime (if pre win32/abspath? posix/abspath?)))
+
+(def abspath (comptime (if pre win32/abspath posix/abspath)))
+
+(def parts (comptime (if pre win32/parts posix/parts)))
+
+(def normalize (comptime (if pre win32/normalize posix/normalize)))
+
+(def join (comptime (if pre win32/join posix/join)))
+
+(def relpath (comptime (if pre win32/relpath posix/relpath)))
+

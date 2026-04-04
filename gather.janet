@@ -72,18 +72,13 @@
   (peg/compile ~{:back (> -1 (+ (* ($) (set "\\/.")) :back))
                  :main :back}))
 
-(defn ext
+(defn path/ext
   "Get the file extension for a path."
   [path]
   (if-let [m (peg/match path/ext-peg path (length path))]
     (let [i (m 0)]
       (if (= (path i) 46)
         (string/slice path (m 0))))))
-
-(defn- path/redef
-  "Redef a value, keeping all metadata."
-  [from to]
-  (setdyn (symbol to) (dyn (symbol from))))
 
 (defn- path/capture-lead
   [& xs]
@@ -98,7 +93,7 @@
   [path]
   (string/has-prefix? "/" path))
 
-(path/redef "ext" "posix/ext")
+(def path/posix/ext path/ext)
 
 (def path/posix/sep "Platform separator" "/")
 
@@ -237,7 +232,7 @@
       (array/concat parts (string/slice path start)))
     (filter |(> (length $) 0) parts)))
 
-(path/redef "ext" "win32/ext")
+(def path/win32/ext path/ext)
 
 (def path/win32/sep "Platform separator" `\`)
 
@@ -357,41 +352,33 @@
   (path/win32/join ;up-walk ;down-walk))
 
 #
-# satisfy flycheck
-#
-
-(def path/ext nil)
-(def path/sep nil)
-(def path/delim nil)
-(def path/basename nil)
-(def path/dirname nil)
-(def path/parent nil)
-(def path/abspath? nil)
-(def path/abspath nil)
-(def path/parts nil)
-(def path/normalize nil)
-(def path/join nil)
-
-#
 # Specialize for current OS
 #
 
-(def- path/syms
-  ["ext"
-   "sep"
-   "delim"
-   "basename"
-   "dirname"
-   "parent"
-   "abspath?"
-   "abspath"
-   "parts"
-   "normalize"
-   "join"
-   "relpath"])
-(let [pre (if (= :windows (os/which)) "win32" "posix")]
-  (each sym path/syms
-    (path/redef (string pre "/" sym) sym)))
+(def- path/pre (if (= :windows (os/which)) "win32" "posix"))
+
+(def path/sep (comptime (if path/pre path/win32/sep path/posix/sep)))
+
+(def path/delim (comptime (if path/pre path/win32/delim path/posix/delim)))
+
+(def path/basename (comptime (if path/pre path/win32/basename path/posix/basename)))
+
+(def path/dirname (comptime (if path/pre path/win32/dirname path/posix/dirname)))
+
+(def path/parent (comptime (if path/pre path/win32/parent path/posix/parent)))
+
+(def path/abspath? (comptime (if path/pre path/win32/abspath? path/posix/abspath?)))
+
+(def path/abspath (comptime (if path/pre path/win32/abspath path/posix/abspath)))
+
+(def path/parts (comptime (if path/pre path/win32/parts path/posix/parts)))
+
+(def path/normalize (comptime (if path/pre path/win32/normalize path/posix/normalize)))
+
+(def path/join (comptime (if path/pre path/win32/join path/posix/join)))
+
+(def path/relpath (comptime (if path/pre path/win32/relpath path/posix/relpath)))
+
 
 
 (defn sh/devnull
@@ -3121,7 +3108,7 @@
   (print "Preparations completed."))
 
 
-(def version "2026-04-03_07-54-34")
+(def version "2026-04-04_10-31-29")
 
 (def usage
   `````
