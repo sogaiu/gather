@@ -355,29 +355,29 @@
 # Specialize for current OS
 #
 
-(def- path/pre (if (= :windows (os/which)) "win32" "posix"))
+(def- path/posix? (not= :windows (os/which)))
 
-(def path/sep (comptime (if path/pre path/win32/sep path/posix/sep)))
+(def path/sep (comptime (if path/posix? path/posix/sep path/win32/sep)))
 
-(def path/delim (comptime (if path/pre path/win32/delim path/posix/delim)))
+(def path/delim (comptime (if path/posix? path/posix/delim path/win32/delim)))
 
-(def path/basename (comptime (if path/pre path/win32/basename path/posix/basename)))
+(def path/basename (comptime (if path/posix? path/posix/basename path/win32/basename)))
 
-(def path/dirname (comptime (if path/pre path/win32/dirname path/posix/dirname)))
+(def path/dirname (comptime (if path/posix? path/posix/dirname path/win32/dirname)))
 
-(def path/parent (comptime (if path/pre path/win32/parent path/posix/parent)))
+(def path/parent (comptime (if path/posix? path/posix/parent path/win32/parent)))
 
-(def path/abspath? (comptime (if path/pre path/win32/abspath? path/posix/abspath?)))
+(def path/abspath? (comptime (if path/posix? path/posix/abspath? path/win32/abspath?)))
 
-(def path/abspath (comptime (if path/pre path/win32/abspath path/posix/abspath)))
+(def path/abspath (comptime (if path/posix? path/posix/abspath path/win32/abspath)))
 
-(def path/parts (comptime (if path/pre path/win32/parts path/posix/parts)))
+(def path/parts (comptime (if path/posix? path/posix/parts path/win32/parts)))
 
-(def path/normalize (comptime (if path/pre path/win32/normalize path/posix/normalize)))
+(def path/normalize (comptime (if path/posix? path/posix/normalize path/win32/normalize)))
 
-(def path/join (comptime (if path/pre path/win32/join path/posix/join)))
+(def path/join (comptime (if path/posix? path/posix/join path/win32/join)))
 
-(def path/relpath (comptime (if path/pre path/win32/relpath path/posix/relpath)))
+(def path/relpath (comptime (if path/posix? path/posix/relpath path/win32/relpath)))
 
 
 
@@ -3108,7 +3108,7 @@
   (print "Preparations completed."))
 
 
-(def version "2026-04-04_10-31-29")
+(def version "2026-04-04_14-01-09")
 
 (def usage
   `````

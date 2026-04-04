@@ -297,27 +297,27 @@
 # Specialize for current OS
 #
 
-(def- pre (if (= :windows (os/which)) "win32" "posix"))
+(def- posix? (not= :windows (os/which)))
 
-(def sep (comptime (if pre win32/sep posix/sep)))
+(def sep (comptime (if posix? posix/sep win32/sep)))
 
-(def delim (comptime (if pre win32/delim posix/delim)))
+(def delim (comptime (if posix? posix/delim win32/delim)))
 
-(def basename (comptime (if pre win32/basename posix/basename)))
+(def basename (comptime (if posix? posix/basename win32/basename)))
 
-(def dirname (comptime (if pre win32/dirname posix/dirname)))
+(def dirname (comptime (if posix? posix/dirname win32/dirname)))
 
-(def parent (comptime (if pre win32/parent posix/parent)))
+(def parent (comptime (if posix? posix/parent win32/parent)))
 
-(def abspath? (comptime (if pre win32/abspath? posix/abspath?)))
+(def abspath? (comptime (if posix? posix/abspath? win32/abspath?)))
 
-(def abspath (comptime (if pre win32/abspath posix/abspath)))
+(def abspath (comptime (if posix? posix/abspath win32/abspath)))
 
-(def parts (comptime (if pre win32/parts posix/parts)))
+(def parts (comptime (if posix? posix/parts win32/parts)))
 
-(def normalize (comptime (if pre win32/normalize posix/normalize)))
+(def normalize (comptime (if posix? posix/normalize win32/normalize)))
 
-(def join (comptime (if pre win32/join posix/join)))
+(def join (comptime (if posix? posix/join win32/join)))
 
-(def relpath (comptime (if pre win32/relpath posix/relpath)))
+(def relpath (comptime (if posix? posix/relpath win32/relpath)))
 
