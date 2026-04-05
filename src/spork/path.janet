@@ -125,7 +125,7 @@
     (filter next (posix/parts (posix/abspath source))))
   (def target-parts
     (filter next (posix/parts (posix/abspath target))))
-  (def same-parts 
+  (def same-parts
     (length (take-until identity (map not= source-parts target-parts))))
   (def up-walk (array/new-filled (- (length source-parts) same-parts) ".."))
   (def down-walk (tuple/slice target-parts same-parts))
@@ -140,7 +140,7 @@
 (def- win-prefix-peg
   (peg/compile
     ~{:drive (* (range "AZ" "az") `:` (any (choice `\` `/`)) ($))
-      :dos-unc (* `\\` (choice "." "?") `\UNC\` 
+      :dos-unc (* `\\` (choice "." "?") `\UNC\`
                   (some (if-not `\` 1)) `\` (some (if-not `\` 1)) (any `\`) ($))
       :dos (* `\\` (choice "." "?") `\` (some (if-not `\` 1)) (any `\`) ($))
       :unc (* `\\` (some (if-not `\` 1)) `\` (some (if-not `\` 1)) (any `\`) ($))
@@ -216,15 +216,15 @@
   (if-let [m (peg/match win32/last-sep-peg path (length path))]
     (let [[p] m
           prefix-end (win32-path-prefix path)]
-      (cond (and (zero? prefix-end) (zero? p)) 
+      (cond (and (zero? prefix-end) (zero? p))
             ""
             (and (zero? prefix-end) (not (zero? p)))
             (string/slice path 0 (dec p))
             (and (not (zero? prefix-end)) (zero? p))
             path
             true
-            (if (= prefix-end (length path)) 
-              path 
+            (if (= prefix-end (length path))
+              path
               (string/slice path 0 (if (= p prefix-end) p (dec p))))))
     path))
 
@@ -243,7 +243,7 @@
   (peg/compile
     ~{:span (some (if-not (set `\/`) 1))
       :sep (some (set `\/`))
-      :main (* (? (* (replace '(+ (* `\\` (some (if-not `\` 1)) `\`) 
+      :main (* (? (* (replace '(+ (* `\\` (some (if-not `\` 1)) `\`)
                                   (* (? (* (range "AZ" "az") `:`)) `\`))
                               ,capture-lead)
                      (any (set `\/`))))
@@ -289,7 +289,7 @@
     (filter next (win32/parts (win32/abspath source))))
   (def target-parts
     (filter next (win32/parts (win32/abspath target))))
-  (def same-parts 
+  (def same-parts
     (length (take-until identity (map not= source-parts target-parts))))
   (def up-walk (array/new-filled (- (length source-parts) same-parts) ".."))
   (def down-walk (tuple/slice target-parts same-parts))
