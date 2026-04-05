@@ -155,7 +155,7 @@
     (match x
       [:lead what] (set lead what)
       "." nil
-      ".." (if (and (not lead) (= 0 seen))
+      ".." (if (and (nil? lead) (= 0 seen))
              (array/push accum x)
              (do
                (when (< 0 seen) (-- seen))
@@ -321,9 +321,11 @@
     (match x
       [:lead what] (set lead what)
       "." nil
-      ".." (if (= 0 seen)
+      ".." (if (and (nil? lead) (= 0 seen))
              (array/push accum x)
-             (do (-- seen) (array/pop accum)))
+             (do
+               (when (< 0 seen) (-- seen))
+               (array/pop accum)))
       (do (++ seen) (array/push accum x))))
   (def ret (string (or lead "") (string/join accum `\`)))
   (if (= "" ret) "." ret))
@@ -3110,7 +3112,7 @@
   (print "Preparations completed."))
 
 
-(def version "2026-04-05_14-19-07")
+(def version "2026-04-05_15-46-10")
 
 (def usage
   `````
