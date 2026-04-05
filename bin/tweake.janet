@@ -1,6 +1,292 @@
 #! /usr/bin/env janet
 
 (comment import ./args :prefix "")
+(comment import ./deval :prefix "")
+# deval - defensive eval
+
+(def d/atoms
+  (invert [:boolean
+           :buffer
+           :keyword
+           :nil
+           :number
+           :string
+           :symbol]))
+
+(defn d/atom?
+  [x]
+  (truthy? (get d/atoms (type x))))
+
+(comment
+
+  (d/atom? true)
+  # =>
+  true
+
+  (d/atom? @"hello")
+  # =>
+  true
+
+  (d/atom? :smile!)
+  # =>
+  true
+
+  (d/atom? nil)
+  # =>
+  true
+
+  (d/atom? 3.1415926535)
+  # =>
+  true
+
+  (d/atom? ``must have goofed up somewhere``)
+  # =>
+  true
+
+  (d/atom? 'dolphin)
+  # =>
+  true
+
+  (d/atom? (fiber/new (fn [_] 1)))
+  # =>
+  false
+
+  (d/atom? '[:head :end])
+  # =>
+  false
+
+  (d/atom? (map inc [0 1 2]))
+  # =>
+  false
+
+  (d/atom? {:a 1})
+  # =>
+  false
+
+  (d/atom? @{:x 0})
+  # =>
+  false
+
+  )
+
+(def d/colls
+  (invert [:array
+           :struct
+           :table
+           :tuple]))
+
+(defn d/coll?
+  [x]
+  (truthy? (get d/colls (type x))))
+
+(comment
+
+  (d/coll? '[:head :end])
+  # =>
+  true
+
+  (d/coll? (map inc [0 1 2]))
+  # =>
+  true
+
+  (d/coll? {:a 1})
+  # =>
+  true
+
+  (d/coll? @{:x 0})
+  # =>
+  true
+
+  (d/coll? true)
+  # =>
+  false
+
+  (d/coll? @"hello")
+  # =>
+  false
+
+  (d/coll? :smile!)
+  # =>
+  false
+
+  (d/coll? nil)
+  # =>
+  false
+
+  (d/coll? 3.1415926535)
+  # =>
+  false
+
+  (d/coll? ``must have goofed up somewhere``)
+  # =>
+  false
+
+  (d/coll? 'dolphin)
+  # =>
+  false
+
+  (d/coll? (fiber/new (fn [_] 1)))
+  # =>
+  false
+
+  )
+
+(def d/safe-syms
+  (invert 
+    ~[% %= * *= + ++ += - -- -= -> ->> -?> -?>> / /= < <= = > >=
+      accumulate accumulate2 all and any?
+      boolean? buffer? bytes?
+      case catseq cfunction? cmp comp complement cond count
+      dec deep= deep-not= div do
+      empty? even? every?
+      false? filter find find-index first flatten flatten-into fn
+      from-pairs function?
+      get get-in group-by
+      has-key? has-value?
+      idempotent? identity if if-let if-not in inc indexed? interleave
+      interpose invert
+      keep keys keyword?
+      last length lengthable? let
+      map mapcat match math/abs max merge merge-into min mod
+      nan? nat? neg? next nil? not not= number?
+      odd? one? or
+      pairs partial partition partition-by pos? postwalk prewalk product
+      put put-in
+      quasiquote quote
+      range reduce reduce2 reverse reverse!
+      scan-number seq set short-fn slice some sort sorted sorted-by
+      splice string/find string/find-all string/has-prefix?
+      string/has-suffix? string? struct? sum symbol?
+      table? tabseq toggle true? truthy? tuple? type
+      unless unquote update update-in
+      values
+      walk when when-let while
+      zero? zipcoll]))
+
+(defn d/safe-sym?
+  [sym]
+  (truthy? (or (get d/safe-syms sym)
+               (string/has-prefix? "$" sym))))
+
+(comment
+
+  (d/safe-sym? 'all)
+  # =>
+  true
+
+  (d/safe-sym? 'os/cd)
+  # =>
+  false
+
+  )
+
+(defn d/safe?
+  [form]
+  (truthy?
+    (cond
+      (and (tuple? form) (= :parens (tuple/type form)))
+      (let [head (get form 0)]
+        (and (d/safe-sym? head)
+             (all d/safe? (tuple/slice form 1))))
+      #
+      (indexed? form)
+      (all d/safe? form)
+      #
+      (dictionary? form)
+      (all |(let [[k v] $]
+              (and (d/safe? k) (d/safe? v)))
+           (pairs form))
+      #
+      (symbol? form)
+      (d/safe-sym? form)
+      #
+      (d/atom? form)
+      true
+      #
+      false)))
+
+(comment
+
+  (d/safe? true)
+  # =>
+  true
+
+  (d/safe? @"hello")
+  # =>
+  true
+
+  (d/safe? :smile!)
+  # =>
+  true
+
+  (d/safe? nil)
+  # =>
+  true
+
+  (d/safe? 3.1415926535)
+  # =>
+  true
+
+  (d/safe? ``must have goofed up somewhere``)
+  # =>
+  true
+
+  (d/safe? 'and)
+  # =>
+  true
+
+  (d/safe? 'dolphin)
+  # =>
+  false
+
+  (d/safe? '[:head :end])
+  # =>
+  true
+
+  (d/safe? (map inc [0 1 2]))
+  # =>
+  true
+
+  (d/safe? '(map inc [0 1 2]))
+  # =>
+  true
+
+  (d/safe? {:a 1})
+  # =>
+  true
+
+  (d/safe? @{:x 0})
+  # =>
+  true
+
+  (d/safe? (fiber/new (fn [_] 1)))
+  # =>
+  false
+
+  (d/safe? '(fiber/new (fn [_] 1)))
+  # =>
+  false
+
+  (d/safe? '|(+ $ 80))
+  # =>
+  true
+
+  (d/safe? '|(os/cwd))
+  # =>
+  false
+
+  (d/safe? '(map pp [:a :b]))
+  # =>
+  false
+
+  (d/safe? (peg/compile 1))
+  # =>
+  false
+
+  )
+
+
+
 (defn a/parse-args
   [args]
   (def the-args (array ;args))
@@ -57,7 +343,7 @@
   #
   #        (short-fn (= (get $ :name) "niche"))
   #
-  (let [first-step (first path)]
+  (let [first-step (get path 0)]
     (if (symbol? first-step)
       (assertf (string/has-prefix? "@" first-step)
                "leading symbol item must start with @: %n" first-step)
@@ -89,11 +375,13 @@
             nil))
         0)))
   #
+  (assertf (d/safe? path) "path might have unsafe elements: %n" path)
+  (def checked-path (eval path))
+  #
   (merge opts
          {:input input
           :top-level-index top-level-index
-          # XXX: is this `eval` use likely to be a problem?
-          :path (eval path)
+          :path checked-path
           :value-str value-str
           :rest the-args}))
 
@@ -2802,7 +3090,7 @@
 
 
 
-(def version "2026-04-03_07-43-46")
+(def version "2026-04-05_10-26-41")
 
 (def usage
   `````
