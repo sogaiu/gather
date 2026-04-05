@@ -97,9 +97,11 @@
     (match x
       [:lead what] (set lead what)
       "." nil
-      ".." (if (= 0 seen)
+      ".." (if (and (not lead) (= 0 seen))
              (array/push accum x)
-             (do (-- seen) (array/pop accum)))
+             (do
+               (when (< 0 seen) (-- seen))
+               (array/pop accum)))
       (do (++ seen) (array/push accum x))))
   (def ret (string (or lead "") (string/join accum "/")))
   (if (= "" ret) "." ret))
