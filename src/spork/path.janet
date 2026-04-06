@@ -39,8 +39,7 @@
 
 (def posix/delim "Platform delimiter" ":")
 
-(def posix/last-sep-peg
-  "PEG to find last file separator in a path."
+(def- posix/last-sep-peg
   (peg/compile '{:back (> -1 (+ (* "/" ($)) :back))
                  :main (+ :back (constant 0))}))
 
@@ -180,8 +179,7 @@
 
 (def win32/delim "Platform delimiter" ";")
 
-(def win32/last-sep-peg
-  "PEG to find last file separator in a path."
+(def- win32/last-sep-peg
   (peg/compile '{:back (> -1 (+ (* (set `\/`) ($)) :back))
                  :main (+ :back (constant 0))}))
 

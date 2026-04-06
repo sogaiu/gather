@@ -97,8 +97,7 @@
 
 (def path/posix/delim "Platform delimiter" ":")
 
-(def path/posix/last-sep-peg
-  "PEG to find last file separator in a path."
+(def- path/posix/last-sep-peg
   (peg/compile '{:back (> -1 (+ (* "/" ($)) :back))
                  :main (+ :back (constant 0))}))
 
@@ -238,8 +237,7 @@
 
 (def path/win32/delim "Platform delimiter" ";")
 
-(def path/win32/last-sep-peg
-  "PEG to find last file separator in a path."
+(def- path/win32/last-sep-peg
   (peg/compile '{:back (> -1 (+ (* (set `\/`) ($)) :back))
                  :main (+ :back (constant 0))}))
 
@@ -3134,7 +3132,7 @@
   (print "Preparations completed."))
 
 
-(def version "2026-04-06_00-06-03")
+(def version "2026-04-06_00-41-00")
 
 (def usage
   `````
