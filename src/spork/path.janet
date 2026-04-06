@@ -298,50 +298,51 @@
 # Specialize for current OS
 #
 
-(def- posix? (not= :windows (os/which)))
+(def- posix? (delay (let [tos (os/which)]
+                      (and (not= :windows tos) (not= :mingw tos)))))
 
 (def sep
   "Platform separator"
-  (comptime (if posix? posix/sep win32/sep)))
+  (if (posix?) posix/sep win32/sep))
 
 (def delim
   "Platform delimiter"
-  (comptime (if posix? posix/delim win32/delim)))
+  (if (posix?) posix/delim win32/delim))
 
 (def basename
   "Gets the base file name of a path."
-  (comptime (if posix? posix/basename win32/basename)))
+  (if (posix?) posix/basename win32/basename))
 
 (def dirname
   "Gets the directory name of a path."
-  (comptime (if posix? posix/dirname win32/dirname)))
+  (if (posix?) posix/dirname win32/dirname))
 
 (def parent
   "Gets the parent directory name of a path."
-  (comptime (if posix? posix/parent win32/parent)))
+  (if (posix?) posix/parent win32/parent))
 
 (def abspath?
   "Check if a path is absolute."
-  (comptime (if posix? posix/abspath? win32/abspath?)))
+  (if (posix?) posix/abspath? win32/abspath?))
 
 (def abspath
   "Coerce a path to be absolute."
-  (comptime (if posix? posix/abspath win32/abspath)))
+  (if (posix?) posix/abspath win32/abspath))
 
 (def parts
   "Split a path into its parts."
-  (comptime (if posix? posix/parts win32/parts)))
+  (if (posix?) posix/parts win32/parts))
 
 (def normalize
   "Normalize a path. This removes . and .. in the
-   path, as well as empty path elements."
-  (comptime (if posix? posix/normalize win32/normalize)))
+ as well as empty path elements."
+  (if (posix?) posix/normalize win32/normalize))
 
 (def join
   "Join path elements together."
-  (comptime (if posix? posix/join win32/join)))
+  (if (posix?) posix/join win32/join))
 
 (def relpath
   "Get the relative path between two subpaths."
-  (comptime (if posix? posix/relpath win32/relpath)))
+  (if (posix?) posix/relpath win32/relpath))
 

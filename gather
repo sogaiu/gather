@@ -356,52 +356,53 @@
 # Specialize for current OS
 #
 
-(def- path/posix? (not= :windows (os/which)))
+(def- path/posix? (delay (let [tos (os/which)]
+                      (and (not= :windows tos) (not= :mingw tos)))))
 
 (def path/sep
   "Platform separator"
-  (comptime (if path/posix? path/posix/sep path/win32/sep)))
+  (if (path/posix?) path/posix/sep path/win32/sep))
 
 (def path/delim
   "Platform delimiter"
-  (comptime (if path/posix? path/posix/delim path/win32/delim)))
+  (if (path/posix?) path/posix/delim path/win32/delim))
 
 (def path/basename
   "Gets the base file name of a path."
-  (comptime (if path/posix? path/posix/basename path/win32/basename)))
+  (if (path/posix?) path/posix/basename path/win32/basename))
 
 (def path/dirname
   "Gets the directory name of a path."
-  (comptime (if path/posix? path/posix/dirname path/win32/dirname)))
+  (if (path/posix?) path/posix/dirname path/win32/dirname))
 
 (def path/parent
   "Gets the parent directory name of a path."
-  (comptime (if path/posix? path/posix/parent path/win32/parent)))
+  (if (path/posix?) path/posix/parent path/win32/parent))
 
 (def path/abspath?
   "Check if a path is absolute."
-  (comptime (if path/posix? path/posix/abspath? path/win32/abspath?)))
+  (if (path/posix?) path/posix/abspath? path/win32/abspath?))
 
 (def path/abspath
   "Coerce a path to be absolute."
-  (comptime (if path/posix? path/posix/abspath path/win32/abspath)))
+  (if (path/posix?) path/posix/abspath path/win32/abspath))
 
 (def path/parts
   "Split a path into its parts."
-  (comptime (if path/posix? path/posix/parts path/win32/parts)))
+  (if (path/posix?) path/posix/parts path/win32/parts))
 
 (def path/normalize
   "Normalize a path. This removes . and .. in the
-   path, as well as empty path elements."
-  (comptime (if path/posix? path/posix/normalize path/win32/normalize)))
+ as well as empty path elements."
+  (if (path/posix?) path/posix/normalize path/win32/normalize))
 
 (def path/join
   "Join path elements together."
-  (comptime (if path/posix? path/posix/join path/win32/join)))
+  (if (path/posix?) path/posix/join path/win32/join))
 
 (def path/relpath
   "Get the relative path between two subpaths."
-  (comptime (if path/posix? path/posix/relpath path/win32/relpath)))
+  (if (path/posix?) path/posix/relpath path/win32/relpath))
 
 
 
@@ -3132,7 +3133,7 @@
   (print "Preparations completed."))
 
 
-(def version "2026-04-06_00-41-00")
+(def version "2026-04-06_01-52-33")
 
 (def usage
   `````
