@@ -3,8 +3,6 @@
 ### A library for path manipulation.
 ###
 ### Copyright 2019 © Calvin Rose
-###
-### Version without defmacro and friends
 
 #
 # Common
@@ -35,13 +33,14 @@
   [path]
   (string/has-prefix? "/" path))
 
-(def posix/ext ext)
+(def posix/ext "Get the file extension for a path." ext)
 
 (def posix/sep "Platform separator" "/")
 
 (def posix/delim "Platform delimiter" ":")
 
 (def posix/last-sep-peg
+  "PEG to find last file separator in a path."
   (peg/compile '{:back (> -1 (+ (* "/" ($)) :back))
                  :main (+ :back (constant 0))}))
 
@@ -80,7 +79,7 @@
   (peg/compile
     ~{:span (some (if-not "/" 1))
       :sep (some "/")
-      :main (* (? (* (replace '"/" ,capture-lead) (any "/")))
+      :main (* (? (* (/ '"/" ,capture-lead) (any "/")))
                (? ':span)
                (any (* :sep ':span))
                (? (* :sep (constant ""))))}))
@@ -139,10 +138,10 @@
 
 (def- win-prefix-peg
   (peg/compile
-    ~{:drive (* (range "AZ" "az") `:` (any (choice `\` `/`)) ($))
-      :dos-unc (* `\\` (choice "." "?") `\UNC\`
+    ~{:drive (* (range "AZ" "az") `:` (any (+ `\` `/`)) ($))
+      :dos-unc (* `\\` (+ "." "?") `\UNC\`
                   (some (if-not `\` 1)) `\` (some (if-not `\` 1)) (any `\`) ($))
-      :dos (* `\\` (choice "." "?") `\` (some (if-not `\` 1)) (any `\`) ($))
+      :dos (* `\\` (+ "." "?") `\` (some (if-not `\` 1)) (any `\`) ($))
       :unc (* `\\` (some (if-not `\` 1)) `\` (some (if-not `\` 1)) (any `\`) ($))
       :main (+ :drive :dos-unc :dos :unc)}))
 
@@ -160,8 +159,7 @@
 # need to use a peg to allow for mixed `\` and `/` in the
 # same Windows path.
 (def- all-sep-peg
-  (peg/compile ~{:main (any (+ (some (* ($) (choice `\` `/`) 1))
-                               1))}))
+  (peg/compile ~(any (+ (some (* ($) (+ `\` `/`) 1)) 1))))
 
 (defn- sep-split
   "Split string based on separator peg"
@@ -176,13 +174,14 @@
       (array/concat parts (string/slice path start)))
     (filter |(> (length $) 0) parts)))
 
-(def win32/ext ext)
+(def win32/ext "Get the file extension for a path." ext)
 
 (def win32/sep "Platform separator" `\`)
 
 (def win32/delim "Platform delimiter" ";")
 
 (def win32/last-sep-peg
+  "PEG to find last file separator in a path."
   (peg/compile '{:back (> -1 (+ (* (set `\/`) ($)) :back))
                  :main (+ :back (constant 0))}))
 
@@ -243,9 +242,9 @@
   (peg/compile
     ~{:span (some (if-not (set `\/`) 1))
       :sep (some (set `\/`))
-      :main (* (? (* (replace '(+ (* `\\` (some (if-not `\` 1)) `\`)
-                                  (* (? (* (range "AZ" "az") `:`)) `\`))
-                              ,capture-lead)
+      :main (* (? (* (/ '(+ (* `\\` (some (if-not `\` 1)) `\`)
+                            (* (? (* (range "AZ" "az") `:`)) `\`))
+                        ,capture-lead)
                      (any (set `\/`))))
                (? ':span)
                (any (* :sep ':span))
@@ -303,25 +302,48 @@
 
 (def- posix? (not= :windows (os/which)))
 
-(def sep (comptime (if posix? posix/sep win32/sep)))
+(def sep
+  "Platform separator"
+  (comptime (if posix? posix/sep win32/sep)))
 
-(def delim (comptime (if posix? posix/delim win32/delim)))
+(def delim
+  "Platform delimiter"
+  (comptime (if posix? posix/delim win32/delim)))
 
-(def basename (comptime (if posix? posix/basename win32/basename)))
+(def basename
+  "Gets the base file name of a path."
+  (comptime (if posix? posix/basename win32/basename)))
 
-(def dirname (comptime (if posix? posix/dirname win32/dirname)))
+(def dirname
+  "Gets the directory name of a path."
+  (comptime (if posix? posix/dirname win32/dirname)))
 
-(def parent (comptime (if posix? posix/parent win32/parent)))
+(def parent
+  "Gets the parent directory name of a path."
+  (comptime (if posix? posix/parent win32/parent)))
 
-(def abspath? (comptime (if posix? posix/abspath? win32/abspath?)))
+(def abspath?
+  "Check if a path is absolute."
+  (comptime (if posix? posix/abspath? win32/abspath?)))
 
-(def abspath (comptime (if posix? posix/abspath win32/abspath)))
+(def abspath
+  "Coerce a path to be absolute."
+  (comptime (if posix? posix/abspath win32/abspath)))
 
-(def parts (comptime (if posix? posix/parts win32/parts)))
+(def parts
+  "Split a path into its parts."
+  (comptime (if posix? posix/parts win32/parts)))
 
-(def normalize (comptime (if posix? posix/normalize win32/normalize)))
+(def normalize
+  "Normalize a path. This removes . and .. in the
+   path, as well as empty path elements."
+  (comptime (if posix? posix/normalize win32/normalize)))
 
-(def join (comptime (if posix? posix/join win32/join)))
+(def join
+  "Join path elements together."
+  (comptime (if posix? posix/join win32/join)))
 
-(def relpath (comptime (if posix? posix/relpath win32/relpath)))
+(def relpath
+  "Get the relative path between two subpaths."
+  (comptime (if posix? posix/relpath win32/relpath)))
 
