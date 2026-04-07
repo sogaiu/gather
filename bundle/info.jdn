@@ -38,8 +38,10 @@
    :paths [["tweake.janet" "bin/"]]}
   {:name "spork"
    :url "https://github.com/janet-lang/spork"
-   :tag "60110c3688c5687cc603159bcfa38d579f95a27d"
-   :paths [["spork/sh-dsl.janet" "bin/"]]}]
+   :tag "8bfdbb907505225c9a75e0e55c0dec905dffc0b8"
+   :paths [["spork/sh-dsl.janet" "bin/"]
+           # XXX: move up to jeep when jeep updates
+           ["spork/path.janet" "src/spork/"]]}]
 
  :binscripts
  [{:main "gather.janet"
