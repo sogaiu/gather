@@ -31,7 +31,7 @@
   Description of associated values are:
 
   * `:url` - repository to fetch from
-  * `:tag` - relevant commit hash, and
+  * `:tag` - relevant commit hash
   * `:paths` - files to copy into place locally and where to
 
   The happy path is something like:

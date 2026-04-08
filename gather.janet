@@ -3133,7 +3133,7 @@
   (print "Preparations completed."))
 
 
-(def version "2026-04-08_09-56-54")
+(def version "2026-04-08_10-04-58")
 
 (def usage
   `````
@@ -3163,7 +3163,7 @@
   Description of associated values are:
 
   * `:url` - repository to fetch from
-  * `:tag` - relevant commit hash, and
+  * `:tag` - relevant commit hash
   * `:paths` - files to copy into place locally and where to
 
   The happy path is something like:
