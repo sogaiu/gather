@@ -74,7 +74,7 @@
   #
   (when (not (or (= :file (os/stat "bundle/info.jdn" :mode))
                  (= :file (os/stat "info.jdn" :mode))))
-    (eprint (string "failed to find info.jdn or bundle/info.jdn: "
+    (eprint (string "failed to find bundle/info.jdn or info.jdn: "
                     "try invoking with -h for help"))
     (os/exit 1))
   #
