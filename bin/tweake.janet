@@ -1,10 +1,8 @@
 #! /usr/bin/env janet
 
 (comment import ./args :prefix "")
-(comment import ./deval :prefix "")
-# deval - defensive eval
-
-(def d/atoms
+(comment import ./fencer :prefix "")
+(def f/atoms
   (invert [:boolean
            :buffer
            :keyword
@@ -13,125 +11,125 @@
            :string
            :symbol]))
 
-(defn d/atom?
+(defn f/atom?
   [x]
-  (truthy? (get d/atoms (type x))))
+  (truthy? (get f/atoms (type x))))
 
 (comment
 
-  (d/atom? true)
+  (f/atom? true)
   # =>
   true
 
-  (d/atom? @"hello")
+  (f/atom? @"hello")
   # =>
   true
 
-  (d/atom? :smile!)
+  (f/atom? :smile!)
   # =>
   true
 
-  (d/atom? nil)
+  (f/atom? nil)
   # =>
   true
 
-  (d/atom? 3.1415926535)
+  (f/atom? 3.1415926535)
   # =>
   true
 
-  (d/atom? ``must have goofed up somewhere``)
+  (f/atom? ``must have goofed up somewhere``)
   # =>
   true
 
-  (d/atom? 'dolphin)
+  (f/atom? 'dolphin)
   # =>
   true
 
-  (d/atom? (fiber/new (fn [_] 1)))
+  (f/atom? (fiber/new (fn [_] 1)))
   # =>
   false
 
-  (d/atom? '[:head :end])
+  (f/atom? '[:head :end])
   # =>
   false
 
-  (d/atom? (map inc [0 1 2]))
+  (f/atom? (map inc [0 1 2]))
   # =>
   false
 
-  (d/atom? {:a 1})
+  (f/atom? {:a 1})
   # =>
   false
 
-  (d/atom? @{:x 0})
+  (f/atom? @{:x 0})
   # =>
   false
 
   )
 
-(def d/colls
+(def f/colls
   (invert [:array
            :struct
            :table
            :tuple]))
 
-(defn d/coll?
+(defn f/coll?
   [x]
-  (truthy? (get d/colls (type x))))
+  (truthy? (get f/colls (type x))))
 
 (comment
 
-  (d/coll? '[:head :end])
+  (f/coll? '[:head :end])
   # =>
   true
 
-  (d/coll? (map inc [0 1 2]))
+  (f/coll? (map inc [0 1 2]))
   # =>
   true
 
-  (d/coll? {:a 1})
+  (f/coll? {:a 1})
   # =>
   true
 
-  (d/coll? @{:x 0})
+  (f/coll? @{:x 0})
   # =>
   true
 
-  (d/coll? true)
+  (f/coll? true)
   # =>
   false
 
-  (d/coll? @"hello")
+  (f/coll? @"hello")
   # =>
   false
 
-  (d/coll? :smile!)
+  (f/coll? :smile!)
   # =>
   false
 
-  (d/coll? nil)
+  (f/coll? nil)
   # =>
   false
 
-  (d/coll? 3.1415926535)
+  (f/coll? 3.1415926535)
   # =>
   false
 
-  (d/coll? ``must have goofed up somewhere``)
+  (f/coll? ``must have goofed up somewhere``)
   # =>
   false
 
-  (d/coll? 'dolphin)
+  (f/coll? 'dolphin)
   # =>
   false
 
-  (d/coll? (fiber/new (fn [_] 1)))
+  (f/coll? (fiber/new (fn [_] 1)))
   # =>
   false
 
   )
 
-(def d/safe-syms
+(def f/limited-syms
   (invert 
     ~[% %= * *= + ++ += - -- -= -> ->> -?> -?>> / /= < <= = > >=
       accumulate accumulate2 all and any?
@@ -163,123 +161,123 @@
       walk when when-let while
       zero? zipcoll]))
 
-(defn d/safe-sym?
+(defn f/limited-sym?
   [sym]
-  (truthy? (or (get d/safe-syms sym)
+  (truthy? (or (get f/limited-syms sym)
                (string/has-prefix? "$" sym))))
 
 (comment
 
-  (d/safe-sym? 'all)
+  (f/limited-sym? 'all)
   # =>
   true
 
-  (d/safe-sym? 'os/cd)
+  (f/limited-sym? 'os/cd)
   # =>
   false
 
   )
 
-(defn d/safe?
+(defn f/limited?
   [form]
   (truthy?
     (cond
       (and (tuple? form) (= :parens (tuple/type form)))
       (let [head (get form 0)]
-        (and (d/safe-sym? head)
-             (all d/safe? (tuple/slice form 1))))
+        (and (f/limited-sym? head)
+             (all f/limited? (tuple/slice form 1))))
       #
       (indexed? form)
-      (all d/safe? form)
+      (all f/limited? form)
       #
       (dictionary? form)
       (all |(let [[k v] $]
-              (and (d/safe? k) (d/safe? v)))
+              (and (f/limited? k) (f/limited? v)))
            (pairs form))
       #
       (symbol? form)
-      (d/safe-sym? form)
+      (f/limited-sym? form)
       #
-      (d/atom? form)
+      (f/atom? form)
       true
       #
       false)))
 
 (comment
 
-  (d/safe? true)
+  (f/limited? true)
   # =>
   true
 
-  (d/safe? @"hello")
+  (f/limited? @"hello")
   # =>
   true
 
-  (d/safe? :smile!)
+  (f/limited? :smile!)
   # =>
   true
 
-  (d/safe? nil)
+  (f/limited? nil)
   # =>
   true
 
-  (d/safe? 3.1415926535)
+  (f/limited? 3.1415926535)
   # =>
   true
 
-  (d/safe? ``must have goofed up somewhere``)
+  (f/limited? ``must have goofed up somewhere``)
   # =>
   true
 
-  (d/safe? 'and)
+  (f/limited? 'and)
   # =>
   true
 
-  (d/safe? 'dolphin)
+  (f/limited? 'dolphin)
   # =>
   false
 
-  (d/safe? '[:head :end])
+  (f/limited? '[:head :end])
   # =>
   true
 
-  (d/safe? (map inc [0 1 2]))
+  (f/limited? (map inc [0 1 2]))
   # =>
   true
 
-  (d/safe? '(map inc [0 1 2]))
+  (f/limited? '(map inc [0 1 2]))
   # =>
   true
 
-  (d/safe? {:a 1})
+  (f/limited? {:a 1})
   # =>
   true
 
-  (d/safe? @{:x 0})
+  (f/limited? @{:x 0})
   # =>
   true
 
-  (d/safe? (fiber/new (fn [_] 1)))
+  (f/limited? (fiber/new (fn [_] 1)))
   # =>
   false
 
-  (d/safe? '(fiber/new (fn [_] 1)))
+  (f/limited? '(fiber/new (fn [_] 1)))
   # =>
   false
 
-  (d/safe? '|(+ $ 80))
+  (f/limited? '|(+ $ 80))
   # =>
   true
 
-  (d/safe? '|(os/cwd))
+  (f/limited? '|(os/cwd))
   # =>
   false
 
-  (d/safe? '(map pp [:a :b]))
+  (f/limited? '(map pp [:a :b]))
   # =>
   false
 
-  (d/safe? (peg/compile 1))
+  (f/limited? (peg/compile 1))
   # =>
   false
 
@@ -375,7 +373,7 @@
             nil))
         0)))
   #
-  (assertf (d/safe? path) "path might have unsafe elements: %n" path)
+  (assertf (f/limited? path) "path might have unsafe elements: %n" path)
   (def checked-path (eval path))
   #
   (merge opts
@@ -3090,7 +3088,7 @@
 
 
 
-(def version "2026-04-05_10-26-41")
+(def version "2026-04-09_09-26-54")
 
 (def usage
   `````
